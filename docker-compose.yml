@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  frontend:
+    image: node:lts-slim
+    container_name: react-dev-only
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+
+    command: npm start
