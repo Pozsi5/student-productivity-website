@@ -6,7 +6,7 @@ import StartButton from "../components/StartButton";
 import { getOrCreateClientId } from "../utils/UseClientId";
 import { PomodoroSettings } from "../types/PomodoroSettings";
 
-const API_BASE_URL = 'http://localhost:8080/api/pomodoro/settings';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/pomodoro/settings`;
 
 const Pomodoro: React.FC = () => {
     const DEFAULT_SETTINGS: PomodoroSettings = {
