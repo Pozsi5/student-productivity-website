@@ -2,9 +2,9 @@ name: Frontend CI - Install, Check and Build
 
 on:
   push:
-    branches: [ dev, main ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ dev ]
+    branches: [ develop ]
 
 jobs:
   build-frontend:
