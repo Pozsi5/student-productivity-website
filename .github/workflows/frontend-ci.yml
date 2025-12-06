@@ -1,10 +1,14 @@
-name: Frontend CI - Install, Check and Build
+name: Frontend CI/CD Pipeline
 
 on:
   push:
     branches: [ dev, main ]
   pull_request:
     branches: [ dev ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/frontend
 
 jobs:
   build-frontend:
@@ -31,3 +35,67 @@ jobs:
 
       - name: Run Production Build
         run: npm run build
+
+  push-image-frontend:
+    name: Build & Push Frontend Image
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata (Tagging)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,suffix=,enable=true,priority=100
+            type=raw,value=latest,priority=0
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Jelöli, hogy a gyökérmappában keresi a dockerfájlt
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-staging-frontend:
+    name: Deploy Frontend to Staging
+    runs-on: ubuntu-latest
+    needs: push-image-frontend
+    environment: staging
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy Frontend Staging Image
+        run: |
+          IMAGE_TAG=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "--- STARTING FRONTEND DEPLOYMENT TO STAGING ---"
+          echo "Pulling frontend image: ghcr.io/${{ github.repository }}/frontend:$IMAGE_TAG"
+          
+          # Deploy parancs szimulációja:
+          # docker pull ghcr.io/${{ github.repository }}/frontend:$IMAGE_TAG
+          
+          echo "Frontend Deployment to Staging environment completed successfully."
