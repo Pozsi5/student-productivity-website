@@ -56,7 +56,6 @@ const Pomodoro: React.FC = () => {
         });
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const clientId = getOrCreateClientId();
 
@@ -79,7 +78,7 @@ const Pomodoro: React.FC = () => {
                 console.error("Nem sikerült lekérni a beállításokat, default értékek használata.", error);
                 setPomodoroSettings(DEFAULT_SETTINGS);
             });
-    }, []); //Üres tömb miatt csak egyszer tölt be.
+    }, [DEFAULT_SETTINGS]); //Üres tömb miatt csak egyszer tölt be.
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-blue-100">
