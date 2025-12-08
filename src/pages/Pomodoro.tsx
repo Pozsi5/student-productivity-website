@@ -56,6 +56,7 @@ const Pomodoro: React.FC = () => {
         });
     };
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const clientId = getOrCreateClientId();
 
