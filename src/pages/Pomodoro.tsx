@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import TimerImage from "../components/TimerImage";
 import TimeSelector from "../components/TimeSelector";
 import StartButton from "../components/StartButton";
@@ -9,12 +9,12 @@ import { PomodoroSettings } from "../types/PomodoroSettings";
 const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/pomodoro/settings`;
 
 const Pomodoro: React.FC = () => {
-    const DEFAULT_SETTINGS: PomodoroSettings = {
+    const DEFAULT_SETTINGS: PomodoroSettings = useMemo(() => ({
         workDurationMin: 25,
         shortBreakDurationMin: 5,
         longBreakDurationMin: 15,
         loops: 4
-    };
+    }), []);
     const [pomodoroSettings, setPomodoroSettings] = useState<PomodoroSettings>(DEFAULT_SETTINGS)
 
     const saveSettings = (settingsToSave: PomodoroSettings) => {
