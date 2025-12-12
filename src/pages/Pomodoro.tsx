@@ -1,121 +1,96 @@
-import React, {useState, useEffect, useMemo} from "react";
+import React, { useCallback } from "react";
+import { useSettingsApi } from "../hooks/useSettingsApi";
+import { usePomodoroTimer } from "../hooks/usePomodoroTimer";
+
 import TimerImage from "../components/TimerImage";
 import TimeSelector from "../components/TimeSelector";
 import StartButton from "../components/StartButton";
 
-import { getOrCreateClientId } from "../utils/UseClientId";
-import { PomodoroSettings } from "../types/PomodoroSettings";
-
-const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/pomodoro/settings`;
-
 const Pomodoro: React.FC = () => {
-    const DEFAULT_SETTINGS: PomodoroSettings = useMemo(() => ({
-        workDurationMin: 25,
-        shortBreakDurationMin: 5,
-        longBreakDurationMin: 15,
-        loops: 4
-    }), []);
-    const [pomodoroSettings, setPomodoroSettings] = useState<PomodoroSettings>(DEFAULT_SETTINGS)
+    const { settings, loading, updateSetting } = useSettingsApi();
 
-    const saveSettings = (settingsToSave: PomodoroSettings) => {
-        const clientId = getOrCreateClientId();
-        const API_URL = 'http://localhost:8080/api/pomodoro/settings';
+    const {
+        timeLeft,
+        isRunning,
+        currentPhase,
+        handleStartPause,
+        handleReset,
+        formatTime
+    } = usePomodoroTimer(settings);
 
-        const payload = JSON.stringify(settingsToSave);
+    const handleStartClick = useCallback(() => {
+        handleStartPause();
+    }, [handleStartPause]);
 
-        fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'X-Client-ID': clientId,
-                'Content-Type': 'application/json',
-            },
-            body: payload,
-        })
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Hiba a beállítások mentésekor. Státusz:', response.status);
-                } else {
-                    console.log('Beállítások sikeresen mentve a backendre.');
-                }
-            })
-            .catch(err => {
-                console.error('Hálózati hiba a mentés során. Backend fut?', err);
-            });
-    };
+    if (loading) {
+        return <div className="text-center text-lg mt-10">Beállítások betöltése...</div>;
+    }
 
-    const updateSetting = (key: keyof PomodoroSettings, delta: 1 | -1) => {
-        setPomodoroSettings(prevSettings => {
-            const newValue = Math.max(1, prevSettings[key] + delta);
-            const newSettings = {
-                ...prevSettings,
-                [key]: newValue
-            };
-            saveSettings(newSettings);
+    const timerDisplay = formatTime(timeLeft);
 
-            return newSettings;
-        });
-    };
-
-    useEffect(() => {
-        const clientId = getOrCreateClientId();
-
-        fetch(API_BASE_URL, {
-            method: 'GET',
-            headers: {
-                'X-Client-ID': clientId,
-                'Content-Type': 'application/json',
-            },
-        }).then(response => {
-                if (!response.ok) {
-                    console.error(`Szerver hiba (${response.status}) a beállítások betöltésekor.`);
-                    throw new Error("Szerver hiba!");
-                }
-                return response.json();
-            }).then((data: PomodoroSettings) => {
-                setPomodoroSettings(data);
-                console.log("Beállítások betöltve:", data);
-            }).catch(error => {
-                console.error("Nem sikerült lekérni a beállításokat, default értékek használata.", error);
-                setPomodoroSettings(DEFAULT_SETTINGS);
-            });
-    }, [DEFAULT_SETTINGS]); //Üres tömb miatt csak egyszer tölt be.
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-blue-100">
+            {/* 1. KÉP ÉS IDŐ KIJELZÉS */}
             <TimerImage />
+            <h2 className="text-4xl font-bold mt-4 mb-8">
+                {currentPhase}: {timerDisplay}
+            </h2>
+            <p className="mb-4">
+                Ciklus: {currentPhase === 'Focus' ? 'Fókusz van' : 'Szünet van'}
+            </p>
+
+            {/* 2. IDŐ BEÁLLÍTÓK (TimeSelector Komponens) */}
             <div className="grid grid-cols-2 gap-6">
+
+                {/* POMODORO */}
                 <TimeSelector
                     title="Pomodoro"
                     label="Time for focused work"
-                    value={pomodoroSettings.workDurationMin}
+                    value={settings.workDurationMin}
                     onIncrease={() => updateSetting('workDurationMin', 1)}
                     onDecrease={() => updateSetting('workDurationMin', -1)}
                 />
+
+                {/* RÖVID SZÜNET */}
                 <TimeSelector
                     title="Short Break"
                     label="Break between sessions"
-                    value={pomodoroSettings.shortBreakDurationMin}
+                    value={settings.shortBreakDurationMin}
                     onIncrease={() => updateSetting('shortBreakDurationMin', 1)}
                     onDecrease={() => updateSetting('shortBreakDurationMin', -1)}
                 />
+
+                {/* HOSSZÚ SZÜNET */}
                 <TimeSelector
                     title="Long Break"
                     label="Break after a full cycle"
-                    value={pomodoroSettings.longBreakDurationMin}
+                    value={settings.longBreakDurationMin}
                     onIncrease={() => updateSetting('longBreakDurationMin', 1)}
                     onDecrease={() => updateSetting('longBreakDurationMin', -1)}
                 />
+
+                {/* CIKLUSOK SZÁMA */}
                 <TimeSelector
                     title="Loops"
                     label="Sessions per cycle"
-                    value={pomodoroSettings.loops}
+                    value={settings.loops}
                     onIncrease={() => updateSetting('loops', 1)}
                     onDecrease={() => updateSetting('loops', -1)}
                 />
             </div>
-            <StartButton />
+
+            {/* 3. START / SZÜNET / RESET GOMBOK */}
+            <div className="mt-8 flex space-x-4">
+                <StartButton
+                    onClick={handleStartClick}
+                    isStarted={isRunning}
+                >
+                    {isRunning ? 'Szünet' : 'Start'}
+                </StartButton>
+            </div>
         </div>
-    )
+    );
 };
 
 export default Pomodoro;
