@@ -14,7 +14,6 @@ const Pomodoro: React.FC = () => {
         isRunning,
         currentPhase,
         handleStartPause,
-        handleReset,
         formatTime
     } = usePomodoroTimer(settings);
 
