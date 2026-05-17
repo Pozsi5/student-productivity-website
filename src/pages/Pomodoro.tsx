@@ -36,7 +36,7 @@ const Pomodoro: React.FC = () => {
                 {currentPhase}: {timerDisplay}
             </h2>
             <p className="mb-4">
-                Ciklus: {currentPhase === 'Focus' ? 'Fókusz van' : 'Szünet van'}
+                Cycle: {currentPhase === 'Focus' ? 'Focus' : 'Break'}
             </p>
 
             {/* 2. IDŐ BEÁLLÍTÓK (TimeSelector Komponens) */}
@@ -85,7 +85,7 @@ const Pomodoro: React.FC = () => {
                     onClick={handleStartClick}
                     isStarted={isRunning}
                 >
-                    {isRunning ? 'Szünet' : 'Start'}
+                    {isRunning ? 'Stop' : 'Start'}
                 </StartButton>
             </div>
         </div>
