@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from 'react-oidc-context';
+import { BrowserRouter } from 'react-router-dom';
 
 const oidcConfig = {
     authority: "http://localhost:9080/realms/student-productivity-realm",
@@ -25,9 +26,10 @@ const root = ReactDOM.createRoot(
 root.render(
     <React.StrictMode>
         <AuthProvider {...oidcConfig}>
-            <App />
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </AuthProvider>
     </React.StrictMode>
 );
-
 reportWebVitals();

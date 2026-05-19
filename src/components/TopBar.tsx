@@ -14,18 +14,16 @@ const TopBar: React.FC = () => {
     const picture = profile?.picture; // A Google profilkép URL-je (ha van)
 
     const handleLogout = () => {
-        // Ez biztonságosan kiléptet a Keycloakból is, nem csak a Reactből
-        void auth.signoutRedirect();
+        void auth.signoutRedirect({
+            post_logout_redirect_uri: `${window.location.origin}?logout=success`
+        });
     };
 
     return (
         <>
-            {/* Letisztultabb, mélyebb kék fejléc a "fókusz" jegyében */}
             <header className="w-full h-16 bg-[#4A90E2] shadow-md flex items-center justify-between px-6 relative z-30">
 
-                {/* BAL OLDAL: Logó és Hamburger */}
                 <div className="flex items-center gap-4">
-                    {/* Későbbi logó helye, most egy elegáns fehér ikon/kör */}
                     <div className="flex items-center justify-center w-10 h-10 font-bold text-blue-600 bg-white rounded-xl shadow-sm">
                         SP
                     </div>
@@ -34,7 +32,6 @@ const TopBar: React.FC = () => {
                         <HamburgerMenu open={menuOpen} setOpen={setMenuOpen} />
                     </div>
 
-                    {/* A bal oldali főmenü (Picit modernizált színekkel) */}
                     {menuOpen && (
                         <div className="absolute left-6 top-16 mt-2 w-56 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
                             <ul className="text-gray-700">
@@ -55,9 +52,8 @@ const TopBar: React.FC = () => {
                     )}
                 </div>
 
-                {/* JOBB OLDAL: Info és Profil */}
+                {/* Info és Profil */}
                 <div className="flex items-center gap-5 relative">
-                    {/* Finomított Info gomb */}
                     <button
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 text-white font-bold hover:bg-white/30 transition-all focus:outline-none"
                         onClick={() => setInfoOpen(true)}
@@ -66,7 +62,6 @@ const TopBar: React.FC = () => {
                         ?
                     </button>
 
-                    {/* PROFIL GOMB */}
                     <div className="relative">
                         <button
                             onClick={() => setProfileOpen(!profileOpen)}
@@ -87,7 +82,7 @@ const TopBar: React.FC = () => {
                             )}
                         </button>
 
-                        {/* Profil legördülő menü (Kijelentkezés) */}
+                        {/* Profil legördülő menü */}
                         {profileOpen && (
                             <div className="absolute right-0 top-full mt-3 w-48 bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                                 <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
@@ -105,7 +100,6 @@ const TopBar: React.FC = () => {
                 </div>
             </header>
 
-            {/* INFO DIALOG (Modernizált) */}
             {infoOpen && (
                 <div className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm flex items-center justify-center z-50 transition-all">
                     <div className="bg-white rounded-2xl p-8 shadow-2xl w-96 text-center transform scale-100">
